@@ -1,0 +1,19 @@
+{
+  "name": "beckn-spec-utils",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ChakshuGautam",
+  "license": "ISC",
+  "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "^9.0.9",
+    "@apidevtools/swagger-cli": "^4.0.4",
+    "@openapi-contrib/openapi-schema-to-json-schema": "^3.2.0",
+    "flat": "^5.0.2",
+    "json-schema-faker": "^0.5.0-rcv.44",
+    "json-schema-test-data-generator": "^0.1.1"
+  }
+}
