@@ -92,8 +92,8 @@ $RefParser.dereference(specURL, (err, schema) => {
 
                                 const unflattenedJsonSchema = flatten.unflatten(jsonFlattened);
                                 require("fs").writeFileSync(`./spec/${path.substring(1)}-schema.json`, JSON.stringify(unflattenedJsonSchema, null, 2));
-                                require("fs").writeFileSync(`./spec/${path.substring(1)}-keys.csv`, Array.from(filteredKeysWithNumbers.map((item) => [item.split('.')[0], item])).join("\n"));                                
-                                filteredKeysWithNumbers.forEach(item => allKeys.add([item.split('.')[0], item]))
+                                require("fs").writeFileSync(`./spec/${path.substring(1)}-keys.csv`, filteredKeysWithNumbers.map((item) => [item.split('.')[0], item]).join("\n"));                                
+                                filteredKeysWithNumbers.forEach(item => allKeys.add(item))
                             } catch (e) {
                                 console.error(e);
                                 console.error(path);
@@ -109,6 +109,6 @@ $RefParser.dereference(specURL, (err, schema) => {
 
 
         // save all keys to new file csv format
-        require("fs").writeFileSync(`keys-${Date.now()}.csv`, Array.from(allKeys).join("\n"));
+        require("fs").writeFileSync(`keys-${Date.now()}.csv`, Array.from(allKeys).map((item) => [item.split('.')[0], item]).join("\n"));
     }
 });
