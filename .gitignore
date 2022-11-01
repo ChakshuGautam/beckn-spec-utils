@@ -4,3 +4,4 @@ keys.csv
 keys*.csv
 error-schema.json
 node_modules/
+spec/

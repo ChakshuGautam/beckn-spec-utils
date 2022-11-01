@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "clean": "rm -rf flatten-* json-* keys*"
+    "clean": "rm -rf  ./spec/* keys*",
+    "run": "npm run clean && node ./index.js"
   },
   "author": "ChakshuGautam",
   "license": "ISC",
