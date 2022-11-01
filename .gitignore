@@ -1,5 +1,6 @@
 *.yaml
-schema-deref.json
+schema-deref*.json
 keys.csv
+keys*.csv
 error-schema.json
 node_modules/
