@@ -8,7 +8,7 @@ const allKeys = new Set();
 // const specURL = "https://raw.githubusercontent.com/beckn/protocol-specifications/master/core/v0/api/core.yaml";
 const specURL = "https://raw.githubusercontent.com/beckn/DSEP-Specification/draft/api/dsep.yaml";
 
-$RefParser.dereference('./def.yaml', (err, schema) => {
+$RefParser.dereference(specURL, (err, schema) => {
     if (err) {
         console.error(err);
     }
@@ -67,7 +67,6 @@ $RefParser.dereference('./def.yaml', (err, schema) => {
                                 // flatten json data to dot notation
                                 const jsonFlattened = flatten(jsonSchema);
                                 // get keys for flattened json
-                                // const keys = Object.keys(flattened);
                                 const keys = Object.keys(jsonFlattened);
                                 // remove keys not part of the schema
 
@@ -89,7 +88,9 @@ $RefParser.dereference('./def.yaml', (err, schema) => {
                                     });
                                     return newParts.join('.');
                                 });
-
+                                const unflattenedJsonSchema = flatten.unflatten(jsonFlattened);
+                                require("fs").writeFileSync(`./spec/${path.substring(1)}-schema.json`, JSON.stringify(unflattenedJsonSchema, null, 2));
+                                require("fs").writeFileSync(`./spec/${path.substring(1)}-keys.csv`, Array.from(filteredKeysWithNumbers).join("\n"));                                
                                 filteredKeysWithNumbers.forEach(item => allKeys.add(item))
                             } catch (e) {
                                 console.error(e);
