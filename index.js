@@ -8,7 +8,20 @@ const allKeys = new Set();
 // const specURL = "https://raw.githubusercontent.com/beckn/protocol-specifications/master/core/v0/api/core.yaml";
 const specURL = "https://raw.githubusercontent.com/beckn/DSEP-Specification/draft/api/dsep.yaml";
 
-$RefParser.dereference(specURL, (err, schema) => {
+let requiredKeys = {};
+
+function getRequiredKeys(jsonObj, flattenTag) {
+    const keys = Object.keys(jsonObj).forEach(key => {
+        if (key === 'required') {
+            jsonObj[key].forEach((key) => requiredKeys[(flattenTag === ''? flattenTag+key : flattenTag + '.' + key)] = "yes");
+        } else if (typeof jsonObj[key] === 'object') {
+            getRequiredKeys(jsonObj[key], (flattenTag === ''? flattenTag+key : flattenTag + '.' + key));
+        }
+    })
+}
+
+
+$RefParser.dereference('./def.yaml', (err, schema) => {
     if (err) {
         console.error(err);
     }
@@ -17,7 +30,6 @@ $RefParser.dereference(specURL, (err, schema) => {
         require("fs").writeFileSync("schema-deref.json", JSON.stringify(schema, null, 2));
         // finde paths
         const paths = Object.keys(schema.paths);
-
         // Iterate over paths and get all schemas
         paths.forEach(path => {
             console.log('path: ', path);
@@ -38,7 +50,7 @@ $RefParser.dereference(specURL, (err, schema) => {
                             // require("fs").writeFileSync(`flatten-json-schema-${path.substring(1)}.json`, JSON.stringify(flatJsonSchema, null, 2));
                             Object.keys(flatJsonSchema).forEach(key => {
                                 // deleting not required keys
-                                if(key == "type" || key.includes('required') || key.includes('$schema')) {
+                                if(key == "type" || key.includes('$schema')) {
                                     delete flatJsonSchema[key];
                                     return;
                                 }
@@ -62,13 +74,28 @@ $RefParser.dereference(specURL, (err, schema) => {
                             // require("fs").writeFileSync(`json-schema-${path.substring(1)}.json`, JSON.stringify(jsonSchema, null, 2));
 
                             try {
+                                // writing json spec for the path to file
+                                require("fs").writeFileSync(`./spec/${path.substring(1)}-schema.json`, JSON.stringify(jsonSchema, null, 2));
+
+                                getRequiredKeys(jsonSchema,'');
+                                require("fs").writeFileSync(`./spec/${path.substring(1)}-required-keys.json`, JSON.stringify(requiredKeys, null, 2));
                                 const jsonSchemaString = JSON.stringify(jsonSchema, null, 2);
 
                                 // flatten json data to dot notation
                                 const jsonFlattened = flatten(jsonSchema);
                                 // get keys for flattened json
-                                const keys = Object.keys(jsonFlattened);
+                                let keys = Object.keys(jsonFlattened);
                                 // remove keys not part of the schema
+                                let reqKeys = [];
+                                const unflatIntermediateJson = flatten.unflatten(jsonFlattened);
+                                //removing keys with required in them
+                                keys = keys.filter((key) => {
+                                    if(key.includes('required')) {
+                                        delete jsonFlattened[key];
+                                        return false;
+                                    }
+                                    return true ;
+                                })
 
                                 const filteredKeys = keys.filter(key => {
                                     // split key into parts and get last part
@@ -90,9 +117,9 @@ $RefParser.dereference(specURL, (err, schema) => {
                                 });
                                 
 
-                                const unflattenedJsonSchema = flatten.unflatten(jsonFlattened);
-                                require("fs").writeFileSync(`./spec/${path.substring(1)}-schema.json`, JSON.stringify(unflattenedJsonSchema, null, 2));
-                                require("fs").writeFileSync(`./spec/${path.substring(1)}-keys.csv`, filteredKeysWithNumbers.map((item) => [item.split('.')[0], item]).join("\n"));                                
+                                require("fs").writeFileSync(`./spec/${path.substring(1)}-keys.csv`, filteredKeysWithNumbers.map((item) => [item.split('.')[0], item, (requiredKeys[item] ? requiredKeys[item] : "no")]).join("\n"));   
+                                Object.keys(requiredKeys).map(key => allKeys.add(key));
+                                // filteredKeysWithNumbers.push(...Object.keys(requiredKeys)).sort();                             
                                 filteredKeysWithNumbers.forEach(item => allKeys.add(item))
                             } catch (e) {
                                 console.error(e);
@@ -106,9 +133,8 @@ $RefParser.dereference(specURL, (err, schema) => {
                 }
             });
         });
-
-
+        require("fs").writeFileSync(`all-required-keys.json`, JSON.stringify(requiredKeys, null, 2));
         // save all keys to new file csv format
-        require("fs").writeFileSync(`keys-${Date.now()}.csv`, Array.from(allKeys).map((item) => [item.split('.')[0], item]).join("\n"));
+        require("fs").writeFileSync(`keys-${Date.now()}.csv`, Array.from(allKeys).map((item) => [item.split('.')[0], item, (requiredKeys[item] ? requiredKeys[item] : "no")]).join("\n"));
     }
 });
