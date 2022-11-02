@@ -1,6 +1,5 @@
 const $RefParser = require("@apidevtools/json-schema-ref-parser");
 const toJsonSchema = require('@openapi-contrib/openapi-schema-to-json-schema');
-const jsf = require('json-schema-faker');
 const flatten = require('flat');
 
 const allKeys = new Set();
